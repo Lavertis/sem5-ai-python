@@ -1,10 +1,11 @@
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
+from sklearn.datasets import load_breast_cancer
 from sklearn.metrics import confusion_matrix, f1_score
 from sklearn.model_selection import train_test_split
 from sklearn.neighbors import KNeighborsClassifier as kNN
-from sklearn.preprocessing import StandardScaler, MinMaxScaler, RobustScaler
+from sklearn.preprocessing import StandardScaler
 from sklearn.svm import SVC as SVM
 from sklearn.tree import DecisionTreeClassifier as DT, plot_tree
 
@@ -75,59 +76,27 @@ def test_models(models, x_train_, x_test_, y_train_, y_test_):
 
 
 def plot_decision_tree(x_train_, y_train_, x_col_names_, target_class_names_):
-    model = DT(max_depth=3)
+    model = DT(max_depth=5)
     model.fit(x_train_, y_train_)
     plt.figure(figsize=(20, 10))
-    plot_tree(model, feature_names=x_col_names_, class_names=target_class_names_, fontsize=20)
+    plot_tree(model, feature_names=x_col_names_, class_names=target_class_names_, fontsize=8)
     plt.show()
 
 
-df = pd.read_csv('practice_lab_3.csv', sep=';')
-columns = list(df.columns)
+data = load_breast_cancer()
+feature_names = data.feature_names
+target_class_names = data.target_names
+x = data.data
+y = data.target
 
-# zamiana binarnych cech jakościowych na 0 i 1
-df = change_qualitative_feature_of_2_types_to_01(df, 'Gender', 'Female')
-df = change_qualitative_feature_of_2_types_to_01(df, 'Married', 'No')
-df = change_qualitative_feature_of_2_types_to_01(df, 'Education', 'Not Graduate')
-df = change_qualitative_feature_of_2_types_to_01(df, 'Self_Employed', 'No')
-df = change_qualitative_feature_of_2_types_to_01(df, 'Loan_Status', 'N')
-
-# zamiana niebinarnych cech jakościowych na 0...n
-df = change_qualitative_feature_of_more_than_2_types_to_numbers(df, 'Property_Area', 'Loan_Status')
-
-# podzielenie zbioru na x i y
-x, y, x_col_names, y_col_name = get_x_y_from_dataframe(df, 'Loan_Status')
-
-# podzielenie zbioru na testowy i treningowy
 x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, shuffle=True)
-
-# testowanie modeli
 print('==================== Vanilla models ====================')
 models = [kNN(), SVM(), DT()]
 test_models(models, x_train, x_test, y_train, y_test)
 
-# testowanie modeli po przeskalowaniu danych
 print('==================== Models after StandardScaler ====================')
+models = [kNN(), SVM(), DT()]
 x_train_scaled, x_test_scaled = scale_data(StandardScaler(), x_train, x_test)
-models = [kNN(), SVM(), DT()]
 test_models(models, x_train_scaled, x_test_scaled, y_train, y_test)
 
-print('==================== Models after MinMaxScaler ====================')
-x_train_scaled, x_test_scaled = scale_data(MinMaxScaler(), x_train, x_test)
-models = [kNN(), SVM(), DT()]
-test_models(models, x_train_scaled, x_test_scaled, y_train, y_test)
-
-print('==================== Models after RobustScaler ====================')
-x_train_scaled, x_test_scaled = scale_data(RobustScaler(), x_train, x_test)
-models = [kNN(), SVM(), DT()]
-test_models(models, x_train_scaled, x_test_scaled, y_train, y_test)
-
-# rysowanie drzewa decyzyjnego
-plot_decision_tree(x_train_scaled, y_train, x_col_names, ['No', 'Yes'])
-
-print('==================== Models with custom attributes ====================')
-x_train_scaled, x_test_scaled = scale_data(StandardScaler(), x_train, x_test)
-models = [kNN(n_neighbors=3, weights='uniform'), kNN(weights='uniform'), kNN(n_neighbors=10, weights='uniform'),
-          kNN(n_neighbors=3, weights='distance'), kNN(weights='distance'), kNN(n_neighbors=10, weights='distance'),
-          SVM(kernel='linear'), SVM(kernel='poly'), SVM(kernel='rbf')]
-test_models(models, x_train_scaled, x_test_scaled, y_train, y_test)
+plot_decision_tree(x_train_scaled, y_train, feature_names, target_class_names)
