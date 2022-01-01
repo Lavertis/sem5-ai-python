@@ -36,8 +36,8 @@ def get_number_needed_for_variance_percentage(x_train_, percentage):
     return pca_num_
 
 
-def plot_cumulated_variances(variances_, cumulated_variances_):
-    plt.scatter(np.arange(variances_.shape[0]), cumulated_variances_)
+def plot_cumulated_variances(cumulated_variances_):
+    plt.scatter(np.arange(cumulated_variances_.shape[0]), cumulated_variances_)
     plt.yticks(np.arange(0, 1.1, 0.1))
     plt.show()
 
@@ -102,7 +102,7 @@ PC_num = (cumulated_variances < 0.95).sum() + 1
 num_095_percentage = get_number_needed_for_variance_percentage(x_train_scaled, 0.95)
 
 # plot cumulated variances
-plot_cumulated_variances(variances, cumulated_variances)
+plot_cumulated_variances(cumulated_variances)
 
 # plot 2 first principal components
 plot_2_first_principal_components(x_train_scaled, y_train)
