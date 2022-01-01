@@ -4,7 +4,7 @@ from matplotlib import pyplot as plt
 from sklearn.metrics import confusion_matrix, f1_score
 from sklearn.model_selection import train_test_split
 from sklearn.neighbors import KNeighborsClassifier as kNN
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, MinMaxScaler, RobustScaler
 from sklearn.svm import SVC as SVM
 from sklearn.tree import DecisionTreeClassifier as DT, plot_tree
 
@@ -54,16 +54,14 @@ def get_x_y_from_dataframe(data_frame, target_column_name):
     return x_, y_, x_col_names_, y_col_name_
 
 
-def scale_data(x_train_, x_test_):
-    scaler = StandardScaler()
+def scale_data(scaler, x_train_, x_test_):
     scaler.fit(x_train_)
     x_train_ = scaler.transform(x_train_)
     x_test_ = scaler.transform(x_test_)
     return x_train_, x_test_
 
 
-def test_models(x_train_, x_test_, y_train_, y_test_):
-    models = [kNN(), SVM(), DT()]
+def test_models(models, x_train_, x_test_, y_train_, y_test_):
     for model in models:
         model.fit(x_train_, y_train_)
         y_pred = model.predict(x_test_)
@@ -105,12 +103,31 @@ x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, shuffle
 
 # testowanie modeli
 print('==================== Vanilla models ====================')
-test_models(x_train, x_test, y_train, y_test)
+models = [kNN(), SVM(), DT()]
+test_models(models, x_train, x_test, y_train, y_test)
 
 # testowanie modeli po przeskalowaniu danych
-print('==================== Models after data scaling ====================')
-x_train_scaled, x_test_scaled = scale_data(x_train, x_test)
-test_models(x_train_scaled, x_test_scaled, y_train, y_test)
+print('==================== Models after StandardScaler ====================')
+x_train_scaled, x_test_scaled = scale_data(StandardScaler(), x_train, x_test)
+models = [kNN(), SVM(), DT()]
+test_models(models, x_train_scaled, x_test_scaled, y_train, y_test)
+
+print('==================== Models after MinMaxScaler ====================')
+x_train_scaled, x_test_scaled = scale_data(MinMaxScaler(), x_train, x_test)
+models = [kNN(), SVM(), DT()]
+test_models(models, x_train_scaled, x_test_scaled, y_train, y_test)
+
+print('==================== Models after RobustScaler ====================')
+x_train_scaled, x_test_scaled = scale_data(RobustScaler(), x_train, x_test)
+models = [kNN(), SVM(), DT()]
+test_models(models, x_train_scaled, x_test_scaled, y_train, y_test)
 
 # rysowanie drzewa decyzyjnego
 plot_decision_tree(x_train_scaled, y_train, x_col_names, ['No', 'Yes'])
+
+print('==================== Models with custom attributes ====================')
+x_train_scaled, x_test_scaled = scale_data(StandardScaler(), x_train, x_test)
+models = [kNN(n_neighbors=3, weights='uniform'), kNN(weights='uniform'), kNN(n_neighbors=10, weights='uniform'),
+          kNN(n_neighbors=3, weights='distance'), kNN(weights='distance'), kNN(n_neighbors=10, weights='distance'),
+          SVM(kernel='linear'), SVM(kernel='poly'), SVM(kernel='rbf')]
+test_models(models, x_train_scaled, x_test_scaled, y_train, y_test)
