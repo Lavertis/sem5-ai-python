@@ -76,10 +76,13 @@ def plot_learning_history(model_, epoch_cnt_):
     plt.show()
 
 
-def perform_cross_validation():
+def perform_cross_validation(model_):
     x_train_, x_test_, y_train_, y_test_ = train_test_split(x, y, test_size=0.2, shuffle=True)
-    accs = []
+    accs_ = []
     scaler = StandardScaler()
+    epoch_cnt_ = 15
+    weights = model_.get_weights()
+
     for train_index, test_index in KFold(5).split(x_train_):
         x_train_cv = x_train_[train_index, :]
         x_test_cv = x_train_[test_index, :]
@@ -91,14 +94,16 @@ def perform_cross_validation():
         x_test_cv = scaler.transform(x_test_cv)
 
         # uczenie modelu
-        model.fit(x_train_cv, y_train_cv, batch_size=16, epochs=200,
-                  validation_data=(x_test_cv, y_test_cv), verbose=2)
+        model_.set_weights(weights)
+        model_.fit(x_train_cv, y_train_cv, batch_size=16, epochs=epoch_cnt_,
+                   validation_data=(x_test_cv, y_test_cv), verbose=2)
 
         # predykcja
-        y_pred_ = model.predict(x_test_cv).argmax(axis=1)
+        y_pred_ = model_.predict(x_test_cv).argmax(axis=1)
         y_test_cv = y_test_cv.argmax(axis=1)
-        accs.append(accuracy_score(y_test_cv, y_pred_))
-    return accs
+        accs_.append(accuracy_score(y_test_cv, y_pred_))
+    plot_learning_history(model_, epoch_cnt_)
+    return accs_
 
 
 df = load_sklearn_dataset_as_dataframe(load_iris())
@@ -145,7 +150,7 @@ print_result_metrics(y_test, y_pred)
 plot_learning_history(model, epoch_cnt)
 
 # cross validation
-accuracies = perform_cross_validation()
+accuracies = perform_cross_validation(model)
 acc = np.array(accuracies).mean()
 
 print(f'Cross validation accuracy: {round(acc, 4)}')
