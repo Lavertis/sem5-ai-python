@@ -1,13 +1,13 @@
 import numpy as np
 import pandas as pd
-from keras import Sequential
-from keras.layers import Dense
-from keras.optimizers import Adam
 from matplotlib import pyplot as plt
 from sklearn.datasets import load_digits
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split, KFold
 from sklearn.preprocessing import StandardScaler
+from tensorflow.keras import Sequential
+from tensorflow.keras.layers import Dense
+from tensorflow.keras.optimizers import Adam
 
 
 def encode_one_hot(a):
