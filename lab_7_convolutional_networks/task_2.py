@@ -47,33 +47,42 @@ pooling_size = (2, 2)
 conv_rule = 'same'
 epochs_cnt = 10
 
-# utworzenie modelu
-model = Sequential()
+scores = []
 
-# dodanie warstw do modelu
-model.add(Conv2D(input_shape=input_num,
-                 filters=filter_cnt,
-                 kernel_size=kernel_size,
-                 padding=conv_rule, activation=act_func))
-model.add(MaxPooling2D(pool_size=pooling_size))
-model.add(Flatten())
-model.add(Dense(class_cnt, activation='softmax'))
+for layer_count in (0, 1, 2):
+    model = Sequential()
 
-# kompilacja modelu
-model.compile(optimizer=Adam(learning_rate),
-              loss='sparse_categorical_crossentropy',
-              metrics=['accuracy'])
+    # dodanie warstw do modelu
+    model.add(Conv2D(input_shape=input_num,
+                     filters=filter_cnt,
+                     kernel_size=kernel_size,
+                     padding=conv_rule, activation=act_func))
+    model.add(MaxPooling2D(pool_size=pooling_size))
 
-# uczenie modelu
-model.fit(x_train, y_train, epochs=epochs_cnt,
-          validation_data=(x_test, y_test), verbose=2)
+    for _ in range(layer_count):
+        model.add(Conv2D(filters=filter_cnt, kernel_size=kernel_size,
+                         padding=conv_rule, activation=act_func))
+        model.add(MaxPooling2D(pool_size=pooling_size))
 
-# predykcja
-y_pred = model.predict(x_test)
-y_pred = y_pred.argmax(axis=1)
+    model.add(Flatten())
+    model.add(Dense(class_cnt, activation='softmax'))
 
-# f1 score
-score = round(f1_score(y_test, y_pred, average='weighted'), 3)
+    # kompilacja modelu
+    model.compile(optimizer=Adam(learning_rate),
+                  loss='sparse_categorical_crossentropy',
+                  metrics=['accuracy'])
+
+    # uczenie modelu
+    model.fit(x_train, y_train, epochs=epochs_cnt,
+              validation_data=(x_test, y_test), verbose=2)
+
+    # predykcja
+    y_pred = model.predict(x_test)
+    y_pred = y_pred.argmax(axis=1)
+
+    # f1 score
+    score = round(f1_score(y_test, y_pred, average='weighted'), 3)
+    scores.append(score)
 
 # podsumowanie modelu
 model.summary()
