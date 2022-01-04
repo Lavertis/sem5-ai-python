@@ -29,11 +29,11 @@ def remove_outliers(x_train, y_train, value):
     return x_train_no_outliers, y_train_no_outliers
 
 
-def replace_outliers_with_mean(x_train, y_train, value):
+def replace_outliers_with_mean(y_train, value):
     outliers = np.abs((y_train - y_train.mean()) / y_train.std()) > value
     y_train_mean = y_train.copy()
     y_train_mean[outliers] = y_train.mean()
-    return x_train, y_train_mean
+    return y_train_mean
 
 
 def generate_weights_plots(weights, independent_features):
@@ -84,7 +84,7 @@ for _ in range(10):
 
     # usunięcie cech odstających lub zastąpienie ich średnią
     x_train, y_train = remove_outliers(x_train, y_train, 1.5)
-    # x_train, y_train = replace_outliers_with_mean(x_train, y_train, 2.5)
+    # y_train = replace_outliers_with_mean(y_train, 2.5)
     linReg = train_model(x_train, y_train)
     y_pred = linReg.predict(x_test)
     mape = mean_absolute_percentage_error(y_test, y_pred)
