@@ -74,7 +74,7 @@ def create_model_01(input_num_, class_num_):
 
 def create_model_02(input_num_, class_num_):
     model_ = Sequential()
-    neuron_num = 128
+    neuron_num = 64
 
     model_.add(Dense(neuron_num, activation='relu', input_dim=input_num_))
     model_.add(Dropout(0.5))
@@ -96,7 +96,7 @@ def create_model_02(input_num_, class_num_):
 
 def create_model_03(input_num_, class_num_):
     model_ = Sequential()
-    neuron_num = 256
+    neuron_num = 128
 
     model_.add(Dense(neuron_num, activation='relu', input_dim=input_num_))
     model_.add(Dense(neuron_num, activation='relu', kernel_regularizer=l1(0.1)))
@@ -127,9 +127,6 @@ def test_three_models(x_train_, y_train_):
     models = [model_01, model_02, model_03]
     accs = []
     for idx, model in enumerate(models):
-        # uczenie modelu
-        model.fit(x_train_, y_train_, batch_size=5, epochs=50, verbose=2)
-
         accs += (f'Model{idx + 1}', perform_cross_validation(model, x_train_, y_train_))
 
     print(accs)
@@ -138,7 +135,7 @@ def test_three_models(x_train_, y_train_):
 def perform_cross_validation(model_, x_train_, y_train_):
     accs_ = []
     scaler = StandardScaler()
-    epoch_cnt_ = 15
+    epoch_cnt_ = 50
     weights = model_.get_weights()
 
     for train_index, test_index in KFold(5).split(x_train_):
