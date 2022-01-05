@@ -1,8 +1,9 @@
 import numpy as np
 import pandas as pd
+import tensorflow as tf
 from keras import Input, Model
 from keras.datasets import mnist
-from keras.layers import BatchNormalization, Conv2D, Dense, AveragePooling2D, Flatten, concatenate
+from keras.layers import Dense, Lambda, Flatten, Conv2D, AveragePooling2D
 from keras.utils import plot_model
 from matplotlib import pyplot as plt
 from sklearn.metrics import f1_score
@@ -27,19 +28,11 @@ def plot_learning_history(model_, epoch_cnt_):
     plt.show()
 
 
-def add_dense_net_modules(input_tensor, module_cnt):
-    concatenates = [input_tensor]
-    batches = [input_tensor]
-    path = concatenates[-1]
-
-    for i in range(module_cnt):
-        path = concatenates[-1]
-        path = Conv2D(filter_cnt, (3, 3), padding='same', activation='selu')(path)
-        path = BatchNormalization()(path)
-        batches.append(path)
-        path = concatenate([*batches, path])
-        concatenates.append(path)
-    return path
+# f(x) = x * tanh(ln(1 + e^x))
+def Mish(x):
+    tanh = tf.math.tanh(tf.math.log(tf.add(tf.exp(x), 1)))
+    x = tf.multiply(x, tanh)
+    return x
 
 
 # wczytanie danych
@@ -54,7 +47,9 @@ y_train = pd.get_dummies(pd.Categorical(y_train)).values
 y_test = pd.get_dummies(pd.Categorical(y_test)).values
 
 # określenie wartości hiperparametrów
+act_func = 'relu'
 filter_cnt = 32
+kernel_size = (3, 3)
 class_cnt = y_train.shape[1]
 epochs_cnt = 10
 dense_net_cnt = 2
@@ -62,9 +57,15 @@ dense_net_cnt = 2
 # utworzenie warstw
 output_tensor = input_tensor = Input(x_train.shape[1:])
 
-output_tensor = add_dense_net_modules(output_tensor, dense_net_cnt)
+output_tensor = Lambda(Mish)(output_tensor)
 
-output_tensor = AveragePooling2D()(output_tensor)
+output_tensor = Conv2D(filter_cnt, kernel_size, activation=act_func, padding='same', )(output_tensor)
+output_tensor = AveragePooling2D(2, 2)(output_tensor)
+
+output_tensor = Lambda(Mish)(output_tensor)
+
+output_tensor = Conv2D(filter_cnt, kernel_size, activation=act_func, padding='same', )(output_tensor)
+output_tensor = AveragePooling2D(2, 2)(output_tensor)
 output_tensor = Flatten()(output_tensor)
 output_tensor = Dense(class_cnt, activation='softmax')(output_tensor)
 
@@ -75,7 +76,7 @@ ANN = Model(inputs=input_tensor, outputs=output_tensor)
 ANN.compile(loss='categorical_crossentropy', metrics=['accuracy'], optimizer='adam')
 
 # generacja schematu sieci
-plot_model(ANN, to_file='task_3_model.png', show_shapes=True)
+plot_model(ANN, to_file='task_4_model.png', show_shapes=True)
 
 # uczenie modelu
 ANN.fit(x_train, y_train, epochs=epochs_cnt, validation_data=(x_test, y_test), verbose=2)
