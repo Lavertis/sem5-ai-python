@@ -4,10 +4,9 @@ from keras.layers import Conv2D, MaxPool2D, GlobalAveragePooling2D, Dense, \
     Input, Reshape, UpSampling2D, BatchNormalization, GaussianNoise
 from keras.models import Model
 from keras.optimizers import Adam
-
-# wczytanie danych
 from matplotlib import pyplot as plt
 
+# wczytanie danych
 (x_train, y_train), (x_test, y_test) = mnist.load_data()
 
 # dodanie 4 wymiaru
