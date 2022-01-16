@@ -53,7 +53,7 @@ decoder_layers = [
     UpSampling2D((2, 2)),
     Conv2D(32, (7, 7), padding='same', activation=act_func),
     BatchNormalization(),
-    Conv2D(1, (3, 3), padding='same', activation='sigmoid'),
+    Conv2D(1, (3, 3), padding='same', activation='sigmoid')
 ]
 
 lrng_rate = 0.0002
