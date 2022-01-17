@@ -6,12 +6,9 @@ from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split, KFold
 from sklearn.preprocessing import StandardScaler
 from tensorflow.keras import Sequential
-from tensorflow.keras.layers import Dense
-from tensorflow.keras.layers import Dropout
-from tensorflow.keras.layers import GaussianNoise
+from tensorflow.keras.layers import Dense, Dropout, GaussianNoise
 from tensorflow.keras.optimizers import Adam
-from tensorflow.keras.regularizers import l1
-from tensorflow.keras.regularizers import l2
+from tensorflow.keras.regularizers import l1, l2
 
 
 def encode_one_hot(a):
@@ -24,6 +21,7 @@ def replace_outliers_with_mean(y_train_, value):
     outliers = np.abs((y_train_ - y_train_.mean()) / y_train_.std()) > value
     y_train_mean = y_train_.copy()
     y_train_mean[outliers] = y_train_.mean()
+    print(outliers.sum())
     return y_train_mean
 
 
@@ -65,10 +63,10 @@ def create_model_01(input_num_, class_num_):
     model_.summary()
     # plot_model(model_, to_file="my_model.png")
 
-    learning_rate = 0.0001
+    learning_rate = 0.001
     model_.compile(optimizer=Adam(learning_rate),
                    loss='categorical_crossentropy',
-                   metrics=['accuracy'])
+                   metrics=['categorical_accuracy'])
     return model_
 
 
@@ -87,10 +85,10 @@ def create_model_02(input_num_, class_num_):
     model_.summary()
     # plot_model(model_, to_file="my_model.png")
 
-    learning_rate = 0.0001
+    learning_rate = 0.001
     model_.compile(optimizer=Adam(learning_rate),
                    loss='categorical_crossentropy',
-                   metrics=['accuracy'])
+                   metrics=['categorical_accuracy'])
     return model_
 
 
@@ -107,17 +105,17 @@ def create_model_03(input_num_, class_num_):
     model_.summary()
     # plot_model(model_, to_file="my_model.png")
 
-    learning_rate = 0.0001
+    learning_rate = 0.001
     model_.compile(optimizer=Adam(learning_rate),
                    loss='categorical_crossentropy',
-                   metrics=['accuracy'])
+                   metrics=['categorical_accuracy'])
     return model_
 
 
 def test_three_models(x_train_, y_train_):
     # określenie wielkości wejścia i wyjścia
     input_num = x_train_.shape[1]
-    class_num = y.shape[1]
+    class_num = y_train_.shape[1]
 
     # tworzenie modelów
     model_01 = create_model_01(input_num, class_num)
@@ -134,8 +132,8 @@ def test_three_models(x_train_, y_train_):
 
 def perform_cross_validation(model_, x_train_, y_train_):
     accs_ = []
-    scaler = StandardScaler()
-    epoch_cnt_ = 50
+    # scaler = StandardScaler()
+    epoch_cnt_ = 30
     weights = model_.get_weights()
 
     for train_index, test_index in KFold(5).split(x_train_):
@@ -172,7 +170,7 @@ y = data.values[:, 0]
 y = encode_one_hot(y)
 
 # podział zbioru na treningowy i testowy
-x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, shuffle=True)
+x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=2, shuffle=True)
 
 # zastąpienie wartości odstających średnią
 y_train = replace_outliers_with_mean(y_train, 3)
