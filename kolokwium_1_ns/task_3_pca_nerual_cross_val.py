@@ -4,7 +4,7 @@ from matplotlib import pyplot as plt
 from sklearn.decomposition import PCA
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split, KFold
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import RobustScaler
 from tensorflow.keras import Sequential
 from tensorflow.keras.layers import Dense, Dropout, GaussianNoise
 from tensorflow.keras.optimizers import Adam
@@ -133,7 +133,7 @@ def test_three_models(x_train_, y_train_):
 def perform_cross_validation(model_, x_train_, y_train_):
     accs_ = []
     # scaler = StandardScaler()
-    epoch_cnt_ = 30
+    epoch_cnt_ = 10
     weights = model_.get_weights()
 
     for train_index, test_index in KFold(5).split(x_train_):
@@ -172,11 +172,11 @@ y = encode_one_hot(y)
 # podział zbioru na treningowy i testowy
 x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=2, shuffle=True)
 
-# zastąpienie wartości odstających średnią
-y_train = replace_outliers_with_mean(y_train, 3)
-
-# normalizacja danych — skalowanie
-x_train, x_test = scale_data(StandardScaler(), x_train, x_test)
+# outliers
+scaler = RobustScaler()
+scaler.fit(x_train)
+x_train = scaler.transform(x_train)
+x_test = scaler.transform(x_test)
 
 # redukcja wymiarów PCA
 pca_transformer = PCA(0.95)
