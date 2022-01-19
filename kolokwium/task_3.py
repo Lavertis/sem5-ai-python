@@ -1,7 +1,5 @@
 import numpy as np
 import pandas as pd
-from matplotlib import pyplot as plt
-from sklearn.decomposition import PCA
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import train_test_split, KFold
 from sklearn.preprocessing import StandardScaler
@@ -28,23 +26,11 @@ def replace_outliers_with_mean(x_train_, value):
     return x_train_mean
 
 
-def plot_learning_history(model_, epoch_cnt_):
-    history = model_.history.history
-    floss_train = history['loss']
-    floss_test = history['val_loss']
-    acc_train = history['accuracy']
-    acc_test = history['val_accuracy']
-    fig, ax = plt.subplots(1, 2, figsize=(20, 10))
-    epochs = np.arange(0, epoch_cnt_)
-    ax[0].plot(epochs, floss_train, label='floss_train')
-    ax[0].plot(epochs, floss_test, label='floss_test')
-    ax[0].set_title('Funkcje strat')
-    ax[0].legend()
-    ax[1].set_title('Dokładności')
-    ax[1].plot(epochs, acc_train, label='acc_train')
-    ax[1].plot(epochs, acc_test, label='acc_test')
-    ax[1].legend()
-    plt.show()
+def scale_data(scaler, x_train_, x_test_):
+    scaler.fit(x_train_)
+    x_train_ = scaler.transform(x_train_)
+    x_test_ = scaler.transform(x_test_)
+    return x_train_, x_test_
 
 
 def create_model_01(input_num_, class_num_):
@@ -128,7 +114,6 @@ def test_three_models(x_train_, y_train_):
 
 def perform_cross_validation(model_, x_train_, y_train_):
     accs_ = []
-    # scaler = StandardScaler()
     epoch_cnt_ = 10
     weights = model_.get_weights()
 
@@ -137,10 +122,6 @@ def perform_cross_validation(model_, x_train_, y_train_):
         x_test_cv = x_train_[test_index, :]
         y_train_cv = y_train_[train_index, :]
         y_test_cv = y_train_[test_index, :]
-
-        # normalizacja danych — skalowanie
-        # x_train_cv = scaler.fit_transform(x_train_cv)
-        # x_test_cv = scaler.transform(x_test_cv)
 
         # uczenie modelu
         model_.set_weights(weights)
@@ -177,9 +158,5 @@ scaler.fit(x_train)
 x_train = scaler.transform(x_train)
 x_test = scaler.transform(x_test)
 
-# redukcja wymiarów PCA
-pca_transformer = PCA(0.95)
-x_train = pca_transformer.fit_transform(x_train)
-x_test = pca_transformer.transform(x_test)
-
 test_three_models(x_train, y_train)
+# Model 1 jest najlepszy

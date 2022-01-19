@@ -13,15 +13,6 @@ def scale_data(scaler, x_train_, x_test_):
     return x_train_, x_test_
 
 
-def get_number_needed_for_variance_percentage(x_train_, percentage):
-    pca_transformer_ = PCA()
-    pca_transformer_.fit(x_train_)
-    variances_ = pca_transformer_.explained_variance_ratio_
-    cumulated_variances_ = variances_.cumsum()
-    pca_num_ = (cumulated_variances_ < percentage).sum() + 1
-    return pca_num_
-
-
 def do_test(classifier, x_train_, x_test_, y_train_, y_test_):
     model = classifier
     model.fit(x_train_, y_train_)
@@ -44,8 +35,8 @@ y = df.values[:, -1]
 x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, shuffle=True)
 x_train, x_test = scale_data(StandardScaler(), x_train, x_test)
 
-PC_num_075 = get_number_needed_for_variance_percentage(x_train, 0.75)
-PC_num_080 = get_number_needed_for_variance_percentage(x_train, 0.8)
+PC_num_075 = PCA(0.75).fit_transform(x_train).shape[1]
+PC_num_080 = PCA(0.8).fit_transform(x_train).shape[1]
 
 print('==================== Original data ====================')
 do_three_tests(x_train, x_test, y_train, y_test)
